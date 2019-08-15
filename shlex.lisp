@@ -13,11 +13,16 @@
 (def default-whitespace
   #.(string+ #\Space #\Tab #\Newline #\Return #\Linefeed))
 
+(defun map-lexer-tokens (fn lexer)
+  (fbind fn
+    (with-slots (eof) lexer
+      (loop for token = (get-token lexer)
+            until (equal token eof)
+            do (fn token)))))
+
 (defun lexer-tokens (lexer)
-  (with-slots (eof) lexer
-    (loop for token = (get-token lexer)
-          until (equal token eof)
-          collect token)))
+  (collecting
+    (map-lexer-tokens #'collect lexer)))
 
 (defgeneric read-token (lexer)
   (:documentation "Read a raw token."))
@@ -420,24 +425,30 @@ string with a fill pointer."
                                         "'\"'\"'")
                     "'"))))
 
-(defgeneric split (source &key)
-  (:documentation "Split SOURCE, a string or stream, using shell-like rules.
+(defun split (source &rest args &key &allow-other-keys)
+  "Split SOURCE, a string or stream, into tokens using shell-like rules.
 
 Pass `:posix` (true by default) to obey POSIX parsing rules.
 
-Pass `:punctation-chars` (nil by default) if you want runs of punctuation characters (semicolons, greater and less than signs, ampersands, etc.) to be parsed as separate tokens."))
+Pass `:punctuation-chars` (nil by default) if you want runs of punctuation characters (semicolons, greater and less than signs, ampersands, etc.) to be parsed as separate tokens."
+  (collecting
+    (apply #'map-tokens #'collect source args)))
 
-(defmethod split ((s string) &rest args &key &allow-other-keys)
+(defgeneric map-tokens (fn source &key)
+  (:documentation "Map FN over the tokens of SOURCE, a string or stream, using shell-like rules.
+See the documentation of `split' for a discussion of possible options."))
+
+(defmethod map-tokens (fn (s string) &rest args &key &allow-other-keys)
   (with-input-from-string (in s)
-    (apply #'split in :debug-input s
+    (apply #'map-tokens fn in :debug-input s
            args)))
 
-(defmethod split ((in stream) &rest args
-                  &key comments (posix t)
-                       debug-input
-                       punctuation-chars
-                       (whitespace-split (not punctuation-chars))
-                  &allow-other-keys)
+(defmethod map-tokens (fn (in stream) &rest args
+                       &key comments (posix t)
+                            debug-input
+                            punctuation-chars
+                            (whitespace-split (not punctuation-chars))
+                       &allow-other-keys)
   (let ((lexer (apply #'make 'shlex
                       :debug-input (or debug-input "")
                       :instream in
@@ -447,7 +458,15 @@ Pass `:punctation-chars` (nil by default) if you want runs of punctuation charac
                                       default-commenters
                                       "")
                       (remove-from-plist args :comments :debug-input))))
-    (lexer-tokens lexer)))
+    (map-lexer-tokens fn lexer)))
+
+(define-do-macro do-tokens ((token (source &rest args &key &allow-other-keys)
+                                   &optional return)
+                            &body body)
+  "Iterate over the tokens of SOURCE, using shell-like rules."
+  `(map-tokens (lambda (,token)
+                 ,@body)
+               ,source ,@args))
 
 (defun ensure-string-stream (s)
   (etypecase s
