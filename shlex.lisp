@@ -31,21 +31,24 @@
   (:documentation "Return the next token."))
 
 (define-condition shlex-error (error)
-  ((lexer :initarg :lexer)))
+  ((lexer :initarg :lexer)
+   (base-message :accessor base-message)))
 
 (define-condition no-closing-quotation (shlex-error)
-  ()
+  ((base-message :initform "Missing closing quotation in string"))
   (:report (lambda (c s)
-             (with-slots (lexer) c
-               (format s "Missing closing quotation in string (line ~d):~%~a"
+             (with-slots (base-message lexer) c
+               (format s "~a (line ~d):~%~a"
+                       (base-message c)
                        (lexer-line-number lexer)
                        (lexer-input lexer))))))
 
 (define-condition no-escaped-character (shlex-error)
-  ()
+  ((base-message :initform "No escaped character in string"))
   (:report (lambda (c s)
-             (with-slots (lexer) c
-               (format s "No escaped character in string (line ~d):~%~a"
+             (with-slots (base-message lexer) c
+               (format s "~a (line ~d):~%~a"
+                       (base-message c)
                        (lexer-line-number lexer)
                        (lexer-input lexer))))))
 
