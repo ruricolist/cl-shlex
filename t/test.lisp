@@ -189,3 +189,8 @@ world"))
       (equal (fmt "hello~%world")
              (shlex:split "'hello\
 world'"))))
+
+(test chmod
+  (is (equal '("chmod" "+x" "foo")
+             (shlex:split "chmod +x foo"
+                          :punctuation-chars t))))

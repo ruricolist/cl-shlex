@@ -141,7 +141,7 @@ Runs of punctuation are returned as a single token."
       (setf word-chars
             (remove-if (op (find _ punctuation-chars))
                        ;; Chars allowed in file names, args, wildcards.
-                       (string+ word-chars "~-./*?=")))))
+                       (string+ word-chars "~-+./*?=")))))
   (with-slots (punctuation-chars whitespace-split) self
     (when (and (not (emptyp punctuation-chars))
                whitespace-split)
