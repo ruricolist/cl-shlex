@@ -194,3 +194,8 @@ world'"))))
   (is (equal '("chmod" "+x" "foo")
              (shlex:split "chmod +x foo"
                           :punctuation-chars t))))
+
+(test url
+  (is (equal '("http://example.com")
+             (shlex:split "http://example.com"
+                          :punctuation-chars t))))
