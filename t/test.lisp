@@ -204,3 +204,8 @@ world'"))))
   (is (equal '("cut" "-f1,3")
              (shlex:split "cut -f1,3"
                           :punctuation-chars t))))
+
+(test percents
+  (is (equal '("log" "--pretty=format:%s")
+             (shlex:split "log --pretty=format:%s"
+                          :punctuation-chars t))))
