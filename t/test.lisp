@@ -199,3 +199,8 @@ world'"))))
   (is (equal '("http://example.com")
              (shlex:split "http://example.com"
                           :punctuation-chars t))))
+
+(test commas
+  (is (equal '("cut" "-f1,3")
+             (shlex:split "cut -f1,3"
+                          :punctuation-chars t))))
