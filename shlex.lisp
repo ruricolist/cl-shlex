@@ -400,7 +400,7 @@ string with a fill pointer."
            nil
            result)))))
 
-(defconst safe-char-map
+(def safe-char-map
   (lret ((map (make-array 128 :element-type 'bit)))
     (loop for (start end) in '((#\a #\z) (#\A #\Z) (#\0 #\9))
           do (loop for code from (char-code start) to (char-code end)
@@ -410,7 +410,8 @@ string with a fill pointer."
   "Bitmap for a safe char.")
 
 (defsubst safe-char? (char)
-  (declare (optimize speed (safety 1)))
+  (declare (optimize speed (safety 1))
+           (type (simple-array bit (128)) safe-char-map))
   (let ((code (char-code char)))
     (and (< code 128)
          (eql 1 (aref safe-char-map code)))))
