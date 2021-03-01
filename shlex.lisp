@@ -167,20 +167,6 @@ bisection and coerce them to simple arrays of characters."
         (pop pushback)
         (read-token self))))
 
-(defun bisect-left (str char)
-  "Return the index in STR to insert CHAR and keep STR sorted."
-  (declare ((simple-array character (*)) str)
-           (optimize speed (safety 1)))
-  (let ((start 0)
-        (end (length str)))
-    (declare (array-length start end))
-    (loop while (< start end) do
-      (let ((mid (floor (+ start end) 2)))
-        (if (char< (aref str mid) char)
-            (setf start (1+ mid))
-            (setf end mid)))
-          finally (return start))))
-
 (defun find-sorted (char string)
   "Find CHAR in STRING, a sorted string, by bisection."
   (declare ((simple-array character (*)) string)
