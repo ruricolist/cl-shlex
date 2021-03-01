@@ -178,7 +178,7 @@ bisection and coerce them to simple arrays of characters."
                  (if (zerop len) nil
                      (char= (aref string 0) char))
                  (find char string))
-             (let ((idx (bisect-left string char)))
+             (let ((idx (bisect-left string char #'char<)))
                (and (< idx (length string))
                     (char= char (aref string idx))))))))
 
